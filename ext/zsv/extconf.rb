@@ -16,7 +16,7 @@ EXTCONF_DIR = File.expand_path(__dir__)
 VENDOR_DIR = File.join(EXTCONF_DIR, 'vendor')
 ZSV_DIR = File.join(VENDOR_DIR, "zsv-#{ZSV_VERSION}")
 
-def download_file(url, destination, redirect_limit = 10)
+def download_file(url, destination, redirect_limit = 10, verify_ssl = true)
   abort('Too many redirects') if redirect_limit.zero?
 
   uri = URI.parse(url)
@@ -24,23 +24,26 @@ def download_file(url, destination, redirect_limit = 10)
 
   if uri.scheme == 'https'
     http.use_ssl = true
-    # Handle macOS SSL certificate issues
-    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-    begin
-      # Try with system certificates first
-      http.ca_file = ENV['SSL_CERT_FILE'] if ENV['SSL_CERT_FILE']
-    rescue StandardError
-      # Fallback: less strict verification for GitHub (trusted source)
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    end
+    http.verify_mode = verify_ssl ? OpenSSL::SSL::VERIFY_PEER : OpenSSL::SSL::VERIFY_NONE
+    http.ca_file = ENV['SSL_CERT_FILE'] if ENV['SSL_CERT_FILE'] && verify_ssl
   end
 
   request = Net::HTTP::Get.new(uri.request_uri)
-  response = http.request(request)
+
+  begin
+    response = http.request(request)
+  rescue OpenSSL::SSL::SSLError => e
+    if verify_ssl
+      # Retry without SSL verification (GitHub is trusted)
+      warn "SSL verification failed (#{e.message}), retrying without verification..."
+      return download_file(url, destination, redirect_limit, false)
+    end
+    raise
+  end
 
   case response
   when Net::HTTPRedirection
-    download_file(response['location'], destination, redirect_limit - 1)
+    download_file(response['location'], destination, redirect_limit - 1, verify_ssl)
   when Net::HTTPSuccess
     File.binwrite(destination, response.body)
   else
