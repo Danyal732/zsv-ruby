@@ -5,16 +5,6 @@ require 'csv'
 require 'zsv'
 require 'tempfile'
 
-# Memory profiling
-def measure_memory
-  GC.start
-  before = `ps -o rss= -p #{Process.pid}`.to_i
-  yield
-  GC.start
-  after = `ps -o rss= -p #{Process.pid}`.to_i
-  (after - before) / 1024.0 # MB
-end
-
 # Create large test file
 def create_large_file(rows: 100_000)
   file = Tempfile.new(['memory_bench', '.csv'])
@@ -25,32 +15,82 @@ def create_large_file(rows: 100_000)
   end
 
   file.close
-  file # Return tempfile object to prevent GC
+  file
+end
+
+# Measure memory when holding all rows
+def measure_memory_holding_rows(file_path, parser)
+  GC.start(full_mark: true, immediate_sweep: true)
+  before = `ps -o rss= -p #{Process.pid}`.to_i
+
+  rows = []
+  if parser == :csv
+    CSV.foreach(file_path) { |row| rows << row }
+  else
+    ZSV.foreach(file_path) { |row| rows << row }
+  end
+
+  GC.start(full_mark: true, immediate_sweep: true)
+  after = `ps -o rss= -p #{Process.pid}`.to_i
+
+  [rows.size, (after - before) / 1024.0]
+end
+
+# Count string allocations during streaming
+def count_string_allocations(file_path, parser)
+  GC.start
+  GC.disable
+
+  before_count = ObjectSpace.count_objects[:T_STRING]
+
+  if parser == :csv
+    CSV.foreach(file_path) { |_| }
+  else
+    ZSV.foreach(file_path) { |_| }
+  end
+
+  after_count = ObjectSpace.count_objects[:T_STRING]
+  GC.enable
+
+  after_count - before_count
 end
 
 puts 'Creating test data (100K rows)...'
 tempfile = create_large_file
 test_file = tempfile.path
 
-puts "\n=== Memory Usage Comparison ==="
+puts "\n=== Memory Usage (Holding All Rows) ==="
 
-csv_memory = measure_memory do
-  count = 0
-  CSV.foreach(test_file) { |_row| count += 1 }
-  puts "CSV processed #{count} rows"
+csv_count, csv_memory = measure_memory_holding_rows(test_file, :csv)
+puts "CSV stdlib: #{csv_count} rows, #{csv_memory.round(1)} MB"
+
+# Force cleanup between tests
+GC.start(full_mark: true, immediate_sweep: true)
+sleep 0.1
+
+zsv_count, zsv_memory = measure_memory_holding_rows(test_file, :zsv)
+puts "ZSV:        #{zsv_count} rows, #{zsv_memory.round(1)} MB"
+
+if csv_memory.positive? && zsv_memory.positive?
+  savings = ((1 - zsv_memory / csv_memory) * 100).round(1)
+  puts "\nMemory savings: #{savings}%"
 end
 
-zsv_memory = measure_memory do
-  count = 0
-  ZSV.foreach(test_file) { |_row| count += 1 }
-  puts "ZSV processed #{count} rows"
-end
+puts "\n=== String Allocations (Streaming 10K rows) ==="
+tempfile_small = create_large_file(rows: 10_000)
+small_file = tempfile_small.path
 
-puts "\nMemory used (MB):"
-puts "  CSV: #{csv_memory.round(2)} MB"
-puts "  ZSV: #{zsv_memory.round(2)} MB"
-difference = (csv_memory - zsv_memory).round(2)
-reduction = ((1 - (zsv_memory / csv_memory)) * 100).round(1)
-puts "  Difference: #{difference} MB (#{reduction}% reduction)"
+csv_allocs = count_string_allocations(small_file, :csv)
+GC.start
+zsv_allocs = count_string_allocations(small_file, :zsv)
+
+puts "CSV stdlib: #{csv_allocs} strings"
+puts "ZSV:        #{zsv_allocs} strings"
+
+if csv_allocs.positive? && zsv_allocs.positive?
+  reduction = ((1 - zsv_allocs.to_f / csv_allocs) * 100).round(1)
+  puts "\nAllocation reduction: #{reduction}%"
+end
 
 tempfile.unlink
+tempfile_small.unlink

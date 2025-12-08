@@ -163,10 +163,27 @@ CSV (stdlib):     7.8 i/s
 ZSV:             33.8 i/s - 4.33x faster
 ```
 
+### Memory Usage
+
+ZSV uses significantly less memory than Ruby's CSV stdlib:
+
+```
+=== Memory Usage (100K rows) ===
+CSV stdlib: 56.8 MB
+ZSV:         9.9 MB - 82.6% less memory
+
+=== String Allocations (10K rows) ===
+CSV stdlib: 116,144 strings
+ZSV:         50,005 strings - 56.9% fewer allocations
+```
+
+ZSV achieves **~6x lower memory usage** through frozen strings and efficient C-level memory management.
+
 Run benchmarks yourself:
 
 ```bash
 bundle exec rake bench
+bundle exec ruby benchmark/memory_bench.rb
 ```
 
 ## API Reference
