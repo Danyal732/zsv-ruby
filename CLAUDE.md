@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-zsv-ruby: SIMD-accelerated CSV parser gem that's 10-50x faster than Ruby's CSV stdlib. Native C extension wrapping zsv 1.3.0 library. Compiles against zsv 1.3.0, version numbers stay in sync.
+zsv-ruby: SIMD-accelerated CSV parser gem that's 5-6x faster than Ruby's CSV stdlib. Native C extension wrapping zsv 1.3.0 library. Compiles against zsv 1.3.0, version numbers stay in sync.
 
 ## Essential Commands
 

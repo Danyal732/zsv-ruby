@@ -88,12 +88,7 @@
    - StringIO, Socket, etc. will raise NotImplementedError
    - File paths and strings work perfectly
 
-2. **GC Shutdown**: Minor crash during Ruby exit (after all tests pass)
-   - Does not affect functionality
-   - Tests complete successfully
-   - Likely Ruby 3.4.7-specific issue
-
-3. **Write Support**: Not implemented
+2. **Write Support**: Not implemented
    - Read-only parser
    - CSV generation not supported (future feature)
 
@@ -132,7 +127,7 @@ Benchmark.bm do |x|
 end
 ```
 
-Expected: ZSV is 10-50x faster
+Expected: ZSV is 5-6x faster
 
 ## Conclusion
 

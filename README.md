@@ -1,6 +1,6 @@
 # ZSV - SIMD-Accelerated CSV Parser for Ruby ⚡
 
-A drop-in replacement for Ruby's CSV stdlib that uses the [zsv](https://github.com/liquidaty/zsv) C library for 10-50x performance improvements on large CSV files.
+A drop-in replacement for Ruby's CSV stdlib that uses the [zsv](https://github.com/liquidaty/zsv) C library for 5-6x performance improvements via SIMD optimizations.
 
 > 🤖 Built with [Claude Code](https://claude.com/claude-code)
 
@@ -12,7 +12,7 @@ A drop-in replacement for Ruby's CSV stdlib that uses the [zsv](https://github.c
 
 ## ✨ Features
 
-- **Blazing Fast**: 10-50x faster than Ruby's CSV stdlib thanks to SIMD optimizations
+- **Blazing Fast**: 5-6x faster than Ruby's CSV stdlib thanks to SIMD optimizations
 - **Memory Efficient**: Streaming parser that doesn't load entire files into memory
 - **API Compatible**: Familiar interface matching Ruby's CSV class
 - **Native Extension**: Direct C integration for minimal overhead
@@ -122,19 +122,24 @@ ZSV.foreach("data.csv", skip_lines: 2) { |row| puts row }
 
 ## ⚡ Performance
 
-Benchmarks on a 100K row × 10 column CSV file:
+Benchmarks comparing ZSV vs Ruby CSV stdlib (Ruby 3.4.7):
 
 ```
+=== Small file (1K rows, 5 cols) ===
+CSV (stdlib):   163.4 i/s
+ZSV:          1,013.7 i/s - 6.20x faster
+
+=== Medium file (10K rows, 10 cols) ===
+CSV (stdlib):    10.3 i/s
+ZSV:             54.5 i/s - 5.27x faster
+
 === Large file (100K rows, 10 cols) ===
-CSV (stdlib):    1.2 i/s
-ZSV:            45.3 i/s - 37.75x faster
-```
+CSV (stdlib):     1.1 i/s
+ZSV:              5.3 i/s - 5.00x faster
 
-Memory usage comparison:
-
-```
-CSV (stdlib): 125 MB
-ZSV:           12 MB - 90% reduction
+=== With headers (10K rows) ===
+CSV (stdlib):     7.8 i/s
+ZSV:             33.8 i/s - 4.33x faster
 ```
 
 Run benchmarks yourself:

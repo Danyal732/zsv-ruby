@@ -25,11 +25,12 @@ def create_large_file(rows: 100_000)
   end
 
   file.close
-  file.path
+  file # Return tempfile object to prevent GC
 end
 
 puts 'Creating test data (100K rows)...'
-test_file = create_large_file
+tempfile = create_large_file
+test_file = tempfile.path
 
 puts "\n=== Memory Usage Comparison ==="
 
@@ -52,4 +53,4 @@ difference = (csv_memory - zsv_memory).round(2)
 reduction = ((1 - (zsv_memory / csv_memory)) * 100).round(1)
 puts "  Difference: #{difference} MB (#{reduction}% reduction)"
 
-File.unlink(test_file)
+tempfile.unlink

@@ -19,13 +19,16 @@ def create_test_file(rows: 10_000, cols: 10)
   end
 
   file.close
-  file.path
+  file # Return tempfile object to prevent GC
 end
 
 puts 'Creating test data...'
-small_file = create_test_file(rows: 1_000, cols: 5)
-medium_file = create_test_file(rows: 10_000, cols: 10)
-large_file = create_test_file(rows: 100_000, cols: 10)
+small_tempfile = create_test_file(rows: 1_000, cols: 5)
+medium_tempfile = create_test_file(rows: 10_000, cols: 10)
+large_tempfile = create_test_file(rows: 100_000, cols: 10)
+small_file = small_tempfile.path
+medium_file = medium_tempfile.path
+large_file = large_tempfile.path
 
 puts "\n=== Small file (1K rows, 5 cols) ==="
 Benchmark.ips do |x|
@@ -88,6 +91,6 @@ Benchmark.ips do |x|
 end
 
 # Cleanup
-File.unlink(small_file)
-File.unlink(medium_file)
-File.unlink(large_file)
+small_tempfile.unlink
+medium_tempfile.unlink
+large_tempfile.unlink
