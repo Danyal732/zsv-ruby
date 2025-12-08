@@ -95,6 +95,27 @@ ZSV.open("data.csv") do |parser|
 end
 ```
 
+### Enumerable Methods
+
+The parser includes `Enumerable`, so you can use `map`, `select`, `find`, etc.:
+
+```ruby
+# Transform rows
+names = ZSV.open("users.csv", headers: true) do |parser|
+  parser.map { |row| row["name"].upcase }
+end
+
+# Filter rows
+adults = ZSV.open("users.csv", headers: true) do |parser|
+  parser.select { |row| row["age"].to_i >= 18 }
+end
+
+# Find first match
+admin = ZSV.open("users.csv", headers: true) do |parser|
+  parser.find { |row| row["role"] == "admin" }
+end
+```
+
 ### Options
 
 All parsing methods accept these options:
