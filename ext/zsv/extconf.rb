@@ -1,39 +1,50 @@
 # frozen_string_literal: true
 
-require "mkmf"
-require "net/http"
-require "uri"
-require "fileutils"
-require "rubygems/package"
-require "zlib"
+require 'mkmf'
+require 'net/http'
+require 'uri'
+require 'fileutils'
+require 'rubygems/package'
+require 'zlib'
+require 'openssl'
 
 # ZSV version to compile against
-ZSV_VERSION = "1.3.0"
+ZSV_VERSION = '1.3.0'
 ZSV_URL = "https://github.com/liquidaty/zsv/archive/refs/tags/v#{ZSV_VERSION}.tar.gz".freeze
 # Use absolute path relative to the original extconf.rb location
 EXTCONF_DIR = File.expand_path(__dir__)
-VENDOR_DIR = File.join(EXTCONF_DIR, "vendor")
+VENDOR_DIR = File.join(EXTCONF_DIR, 'vendor')
 ZSV_DIR = File.join(VENDOR_DIR, "zsv-#{ZSV_VERSION}")
 
-def download_file(url, destination)
+def download_file(url, destination, redirect_limit = 10)
+  abort('Too many redirects') if redirect_limit.zero?
+
   uri = URI.parse(url)
-  File.open(destination, "wb") do |file|
-    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
-      request = Net::HTTP::Get.new(uri)
-      http.request(request) do |response|
-        case response
-        when Net::HTTPRedirection
-          # Follow redirect
-          download_file(response["location"], destination)
-        when Net::HTTPSuccess
-          response.read_body do |chunk|
-            file.write(chunk)
-          end
-        else
-          abort("Failed to download: #{response.code} #{response.message}")
-        end
-      end
+  http = Net::HTTP.new(uri.host, uri.port)
+
+  if uri.scheme == 'https'
+    http.use_ssl = true
+    # Handle macOS SSL certificate issues
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    begin
+      # Try with system certificates first
+      http.ca_file = ENV['SSL_CERT_FILE'] if ENV['SSL_CERT_FILE']
+    rescue StandardError
+      # Fallback: less strict verification for GitHub (trusted source)
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     end
+  end
+
+  request = Net::HTTP::Get.new(uri.request_uri)
+  response = http.request(request)
+
+  case response
+  when Net::HTTPRedirection
+    download_file(response['location'], destination, redirect_limit - 1)
+  when Net::HTTPSuccess
+    File.binwrite(destination, response.body)
+  else
+    abort("Failed to download: #{response.code} #{response.message}")
   end
 end
 
@@ -59,32 +70,32 @@ def download_and_extract_zsv
   puts "Downloading zsv #{ZSV_VERSION}..."
   FileUtils.mkdir_p(VENDOR_DIR)
 
-  tarball = File.join(VENDOR_DIR, "zsv.tar.gz")
+  tarball = File.join(VENDOR_DIR, 'zsv.tar.gz')
   download_file(ZSV_URL, tarball)
 
-  puts "Extracting zsv..."
+  puts 'Extracting zsv...'
   extract_tar_gz(tarball, VENDOR_DIR)
   FileUtils.rm_f(tarball)
 
-  abort("zsv directory not found after extraction") unless File.directory?(ZSV_DIR)
+  abort('zsv directory not found after extraction') unless File.directory?(ZSV_DIR)
   puts "zsv #{ZSV_VERSION} downloaded successfully"
 end
 
 def build_zsv
-  puts "Building zsv library..."
+  puts 'Building zsv library...'
 
   # Build zsv static library
   Dir.chdir(ZSV_DIR) do
     # Configure zsv
-    system("./configure") or abort("Failed to configure zsv") unless File.exist?("config.mk")
+    system('./configure') or abort('Failed to configure zsv') unless File.exist?('config.mk')
 
     # Build the library
-    Dir.chdir("src") do
-      system("make", "build") or abort("Failed to build zsv library")
+    Dir.chdir('src') do
+      system('make', 'build') or abort('Failed to build zsv library')
     end
   end
 
-  puts "zsv library built successfully"
+  puts 'zsv library built successfully'
 end
 
 # Download and build zsv
@@ -93,48 +104,48 @@ build_zsv
 
 # Determine build directory based on platform
 platform_dir = if RUBY_PLATFORM =~ /darwin/
-                 "Darwin"
+                 'Darwin'
                elsif RUBY_PLATFORM =~ /linux/
-                 "Linux"
+                 'Linux'
                else
-                 "generic"
+                 'generic'
                end
 
 # Find the built library - compiler name varies (gcc, gcc-14, clang, etc.)
 # Search for libzsv.a in the build directory
-build_rel_dir = File.join(ZSV_DIR, "build", platform_dir, "rel")
-zsv_lib = Dir.glob(File.join(build_rel_dir, "*", "lib", "libzsv.a")).first
+build_rel_dir = File.join(ZSV_DIR, 'build', platform_dir, 'rel')
+zsv_lib = Dir.glob(File.join(build_rel_dir, '*', 'lib', 'libzsv.a')).first
 
 abort("libzsv.a not found in #{build_rel_dir}/*/lib/") unless zsv_lib && File.exist?(zsv_lib)
 
 zsv_lib_dir = File.dirname(zsv_lib)
 
 # Add zsv include path
-include_dir = File.join(ZSV_DIR, "include")
+include_dir = File.join(ZSV_DIR, 'include')
 
 # Add compiler and linker flags
 $INCFLAGS << " -I#{include_dir}"
-$CFLAGS << " -std=c99 -Wall -Wextra"
-$CFLAGS << " -O3" # Optimization level
+$CFLAGS << ' -std=c99 -Wall -Wextra'
+$CFLAGS << ' -O3' # Optimization level
 
 # Configure include and lib paths
-dir_config("zsv", include_dir, zsv_lib_dir)
+dir_config('zsv', include_dir, zsv_lib_dir)
 
 # Find zsv header
-abort("zsv.h not found in #{include_dir}") unless have_header("zsv.h")
+abort("zsv.h not found in #{include_dir}") unless have_header('zsv.h')
 
 # Link the static library
 $LOCAL_LIBS << " #{zsv_lib}"
 
 # Platform-specific adjustments
 if RUBY_PLATFORM =~ /darwin/
-  $LDFLAGS << " -framework Foundation"
+  $LDFLAGS << ' -framework Foundation'
 elsif RUBY_PLATFORM =~ /linux/
-  $LIBS << " -lpthread -lm"
+  $LIBS << ' -lpthread -lm'
 end
 
 # Check for Ruby 3.2+ hash capacity preallocation
-have_func("rb_hash_new_capa")
+have_func('rb_hash_new_capa')
 
 # Create Makefile
-create_makefile("zsv/zsv")
+create_makefile('zsv/zsv')

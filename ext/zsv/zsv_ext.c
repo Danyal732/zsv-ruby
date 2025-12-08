@@ -223,6 +223,7 @@ static VALUE rb_zsv_foreach(int argc, VALUE *argv, VALUE klass)
 static VALUE rb_zsv_parse(int argc, VALUE *argv, VALUE klass)
 {
     VALUE string, opts;
+    (void)klass;
     rb_scan_args(argc, argv, "11", &string, &opts);
 
     Check_Type(string, T_STRING);
@@ -248,6 +249,7 @@ static VALUE rb_zsv_parse(int argc, VALUE *argv, VALUE klass)
 static VALUE rb_zsv_read(int argc, VALUE *argv, VALUE klass)
 {
     VALUE path, opts;
+    (void)klass;
     rb_scan_args(argc, argv, "11", &path, &opts);
 
     Check_Type(path, T_STRING);
@@ -275,6 +277,7 @@ static VALUE rb_zsv_read(int argc, VALUE *argv, VALUE klass)
 static VALUE rb_zsv_open(int argc, VALUE *argv, VALUE klass)
 {
     VALUE path, mode, opts;
+    (void)klass;
     rb_scan_args(argc, argv, "11:", &path, &mode, &opts);
 
     Check_Type(path, T_STRING);

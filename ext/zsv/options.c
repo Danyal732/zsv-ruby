@@ -106,8 +106,7 @@ void zsv_options_parse(VALUE opts_hash, zsv_ruby_options_t *opts)
 
 void zsv_options_free(zsv_ruby_options_t *opts)
 {
-    /* Currently no dynamic allocations to free */
-    /* This is here for future extensibility */
+    (void)opts; /* Currently no dynamic allocations to free */
 }
 
 void zsv_options_apply(zsv_parser parser, zsv_ruby_options_t *opts)
