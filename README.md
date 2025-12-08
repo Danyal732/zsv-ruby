@@ -301,14 +301,8 @@ MIT License - see LICENSE file for details.
 
 ### Phase 2: Enhanced Features
 - [ ] IO object support with custom read callbacks
-- [ ] CSV writing support
 - [ ] Type converters
 - [ ] Advanced encoding handling
-
-### Phase 3: Optimizations
-- [ ] Batch mode for maximum throughput
-- [ ] Row object reuse option
-- [ ] Parallel parsing for multi-core systems
 
 ## 💬 Support
 
