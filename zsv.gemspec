@@ -5,12 +5,12 @@ require_relative 'lib/zsv/version'
 Gem::Specification.new do |spec|
   spec.name = 'zsv'
   spec.version = ZSV::VERSION
-  spec.authors = ['ZSV Ruby Contributors']
-  spec.email = ['']
+  spec.authors = ['sebyx07']
+  spec.email = ['gore.sebyx@yahoo.com']
 
   spec.summary = 'SIMD-accelerated CSV parser using zsv'
   spec.description = "A drop-in replacement for Ruby's CSV stdlib that uses zsv " \
-                     '(SIMD-accelerated C library) for 10-50x performance improvements'
+                     '(SIMD-accelerated C library) for 5-6x faster CSV parsing'
   spec.homepage = 'https://github.com/sebyx07/zsv-ruby'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.3.0'

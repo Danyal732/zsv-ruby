@@ -299,10 +299,10 @@ MIT License - see LICENSE file for details.
 - [x] Custom delimiters
 - [x] File and string input
 
-### Phase 2: Enhanced Features
-- [ ] IO object support with custom read callbacks
-- [ ] Type converters
-- [ ] Advanced encoding handling
+### Phase 2: CSV Stdlib Compatibility
+- [ ] Type converters (`:numeric`, `:date`, `:date_time`)
+- [ ] Header converters (`:downcase`, `:symbol`)
+- [ ] `unconverted_fields` option
 
 ## 💬 Support
 
