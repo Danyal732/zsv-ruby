@@ -4,8 +4,8 @@
 
 #include <ruby.h>
 #include <ruby/encoding.h>
-#include <zsv.h>
 #include <stdbool.h>
+#include <zsv.h>
 
 /* Module and class references */
 extern VALUE mZSV;

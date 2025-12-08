@@ -27,8 +27,7 @@ typedef struct {
 } zsv_ruby_parser_t;
 
 /* Create new parser from file path */
-zsv_ruby_parser_t *zsv_parser_new_from_path(const char *path,
-                                              VALUE opts_hash);
+zsv_ruby_parser_t *zsv_parser_new_from_path(const char *path, VALUE opts_hash);
 
 /* Create new parser from Ruby IO object */
 zsv_ruby_parser_t *zsv_parser_new_from_io(VALUE io, VALUE opts_hash);

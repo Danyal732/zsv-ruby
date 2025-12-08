@@ -10,7 +10,8 @@ static ID id_encoding;
 static ID id_liberal_parsing;
 static ID id_buffer_size;
 
-void zsv_options_init_symbols(void) {
+void zsv_options_init_symbols(void)
+{
     id_headers = rb_intern("headers");
     id_col_sep = rb_intern("col_sep");
     id_quote_char = rb_intern("quote_char");
@@ -20,7 +21,8 @@ void zsv_options_init_symbols(void) {
     id_buffer_size = rb_intern("buffer_size");
 }
 
-void zsv_options_init(zsv_ruby_options_t *opts) {
+void zsv_options_init(zsv_ruby_options_t *opts)
+{
     opts->delimiter = ',';
     opts->quote_char = '"';
     opts->headers = false;
@@ -31,7 +33,8 @@ void zsv_options_init(zsv_ruby_options_t *opts) {
     opts->buffer_size = 256 * 1024; /* 256KB default */
 }
 
-static VALUE get_option(VALUE opts_hash, ID key, VALUE default_value) {
+static VALUE get_option(VALUE opts_hash, ID key, VALUE default_value)
+{
     if (NIL_P(opts_hash)) {
         return default_value;
     }
@@ -40,7 +43,8 @@ static VALUE get_option(VALUE opts_hash, ID key, VALUE default_value) {
     return NIL_P(val) ? default_value : val;
 }
 
-void zsv_options_parse(VALUE opts_hash, zsv_ruby_options_t *opts) {
+void zsv_options_parse(VALUE opts_hash, zsv_ruby_options_t *opts)
+{
     /* Initialize with defaults */
     zsv_options_init(opts);
 
@@ -100,20 +104,23 @@ void zsv_options_parse(VALUE opts_hash, zsv_ruby_options_t *opts) {
     }
 }
 
-void zsv_options_free(zsv_ruby_options_t *opts) {
+void zsv_options_free(zsv_ruby_options_t *opts)
+{
     /* Currently no dynamic allocations to free */
     /* This is here for future extensibility */
 }
 
-void zsv_options_apply(zsv_parser parser, zsv_ruby_options_t *opts) {
+void zsv_options_apply(zsv_parser parser, zsv_ruby_options_t *opts)
+{
     /* Note: zsv_set_delimiter doesn't exist in zsv API */
     /* The delimiter is set during parser creation via zsv_opts */
     /* Additional zsv-specific option application would go here */
-    (void)parser;  /* Suppress unused parameter warning */
+    (void)parser; /* Suppress unused parameter warning */
     (void)opts;
 }
 
 /* Initialize symbols (call from Init_zsv) */
-void Init_zsv_options(void) {
+void Init_zsv_options(void)
+{
     zsv_options_init_symbols();
 }

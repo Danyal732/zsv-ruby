@@ -8,7 +8,8 @@ static void zsv_parser_init_common(zsv_ruby_parser_t *parser, VALUE opts_hash);
 static void zsv_parser_finish_safe(zsv_ruby_parser_t *parser);
 
 /* Row handler callback for zsv */
-static void zsv_row_handler(void *ctx) {
+static void zsv_row_handler(void *ctx)
+{
     zsv_ruby_parser_t *parser = (zsv_ruby_parser_t *)ctx;
 
     /* Don't allocate Ruby objects during cleanup/GC */
@@ -33,13 +34,12 @@ static void zsv_row_handler(void *ctx) {
     }
 
     /* Process header row - only if headers:true and no custom headers provided */
-    if (parser->options.headers &&
-        NIL_P(parser->options.header_array) &&
+    if (parser->options.headers && NIL_P(parser->options.header_array) &&
         !parser->header_row_processed) {
         parser->headers = zsv_row_builder_to_array(parser->row_builder);
         zsv_row_builder_set_headers(parser->row_builder, parser->headers);
         parser->header_row_processed = true;
-        return;  /* Don't store header row */
+        return; /* Don't store header row */
     }
 
     /* Build row as array or hash */
@@ -56,7 +56,8 @@ static void zsv_row_handler(void *ctx) {
 }
 
 /* Initialize common parser setup */
-static void zsv_parser_init_common(zsv_ruby_parser_t *parser, VALUE opts_hash) {
+static void zsv_parser_init_common(zsv_ruby_parser_t *parser, VALUE opts_hash)
+{
     /* Parse options */
     zsv_options_parse(opts_hash, &parser->options);
 
@@ -81,7 +82,7 @@ static void zsv_parser_init_common(zsv_ruby_parser_t *parser, VALUE opts_hash) {
     if (!NIL_P(parser->options.header_array)) {
         parser->headers = parser->options.header_array;
         zsv_row_builder_set_headers(parser->row_builder, parser->headers);
-        parser->header_row_processed = true;  /* Skip reading headers from file */
+        parser->header_row_processed = true; /* Skip reading headers from file */
     } else {
         parser->headers = Qnil;
     }
@@ -94,7 +95,8 @@ static void zsv_parser_init_common(zsv_ruby_parser_t *parser, VALUE opts_hash) {
 }
 
 /* Create parser from file path */
-zsv_ruby_parser_t *zsv_parser_new_from_path(const char *path, VALUE opts_hash) {
+zsv_ruby_parser_t *zsv_parser_new_from_path(const char *path, VALUE opts_hash)
+{
     zsv_ruby_parser_t *parser = ZSV_ALLOC(zsv_ruby_parser_t);
     memset(parser, 0, sizeof(zsv_ruby_parser_t));
 
@@ -110,7 +112,8 @@ zsv_ruby_parser_t *zsv_parser_new_from_path(const char *path, VALUE opts_hash) {
 }
 
 /* Create parser from Ruby IO */
-zsv_ruby_parser_t *zsv_parser_new_from_io(VALUE io, VALUE opts_hash) {
+zsv_ruby_parser_t *zsv_parser_new_from_io(VALUE io, VALUE opts_hash)
+{
     zsv_ruby_parser_t *parser = ZSV_ALLOC(zsv_ruby_parser_t);
     memset(parser, 0, sizeof(zsv_ruby_parser_t));
 
@@ -121,7 +124,8 @@ zsv_ruby_parser_t *zsv_parser_new_from_io(VALUE io, VALUE opts_hash) {
 }
 
 /* Create parser from string */
-zsv_ruby_parser_t *zsv_parser_new_from_string(VALUE string, VALUE opts_hash) {
+zsv_ruby_parser_t *zsv_parser_new_from_string(VALUE string, VALUE opts_hash)
+{
     Check_Type(string, T_STRING);
 
     zsv_ruby_parser_t *parser = ZSV_ALLOC(zsv_ruby_parser_t);
@@ -142,8 +146,10 @@ zsv_ruby_parser_t *zsv_parser_new_from_string(VALUE string, VALUE opts_hash) {
 }
 
 /* Free parser */
-void zsv_parser_free(zsv_ruby_parser_t *parser) {
-    if (!parser) return;
+void zsv_parser_free(zsv_ruby_parser_t *parser)
+{
+    if (!parser)
+        return;
 
     zsv_parser_close(parser);
 
@@ -160,7 +166,8 @@ void zsv_parser_free(zsv_ruby_parser_t *parser) {
 }
 
 /* Parse next row - pull-based interface */
-VALUE zsv_parser_shift(zsv_ruby_parser_t *parser) {
+VALUE zsv_parser_shift(zsv_ruby_parser_t *parser)
+{
     if (parser->closed) {
         return Qnil;
     }
@@ -195,11 +202,12 @@ VALUE zsv_parser_shift(zsv_ruby_parser_t *parser) {
         return rb_ary_shift(parser->row_buffer);
     }
 
-    return Qnil;  /* EOF or no rows yet */
+    return Qnil; /* EOF or no rows yet */
 }
 
 /* Parse all rows with block */
-void zsv_parser_each(zsv_ruby_parser_t *parser) {
+void zsv_parser_each(zsv_ruby_parser_t *parser)
+{
     VALUE row;
     while (!NIL_P(row = zsv_parser_shift(parser))) {
         rb_yield(row);
@@ -207,7 +215,8 @@ void zsv_parser_each(zsv_ruby_parser_t *parser) {
 }
 
 /* Rewind parser */
-void zsv_parser_rewind(zsv_ruby_parser_t *parser) {
+void zsv_parser_rewind(zsv_ruby_parser_t *parser)
+{
     if (!parser->file) {
         rb_raise(rb_eIOError, "Cannot rewind non-file parser");
     }
@@ -235,9 +244,10 @@ void zsv_parser_rewind(zsv_ruby_parser_t *parser) {
 }
 
 /* Finish parsing safely (flush final row if needed) */
-static void zsv_parser_finish_safe(zsv_ruby_parser_t *parser) {
+static void zsv_parser_finish_safe(zsv_ruby_parser_t *parser)
+{
     if (!parser->zsv) {
-        return;  /* No parser */
+        return; /* No parser */
     }
 
     /* Only finish if we can allocate (not in GC) */
@@ -247,20 +257,20 @@ static void zsv_parser_finish_safe(zsv_ruby_parser_t *parser) {
 }
 
 /* Close parser */
-void zsv_parser_close(zsv_ruby_parser_t *parser) {
-    if (!parser || parser->closed) return;
+void zsv_parser_close(zsv_ruby_parser_t *parser)
+{
+    if (!parser || parser->closed)
+        return;
 
-    /* Mark as closed first to prevent re-entry */
+    /* Mark as closed and in_cleanup FIRST to prevent Ruby allocations
+     * during GC phase. This is critical because dfree may be called
+     * during GC, and zsv_finish/zsv_delete can trigger row callbacks. */
     parser->closed = true;
+    parser->in_cleanup = true;
 
     if (parser->zsv) {
-        /* Finish parsing to flush any final row */
-        zsv_parser_finish_safe(parser);
-
-        /* Mark cleanup to prevent further allocations */
-        parser->in_cleanup = true;
-
-        /* Delete parser - frees internal buffers */
+        /* Delete parser - this calls zsv_finish internally and frees buffers.
+         * Row callbacks may fire but in_cleanup flag prevents allocations. */
         zsv_delete(parser->zsv);
         parser->zsv = NULL;
     }
@@ -272,16 +282,19 @@ void zsv_parser_close(zsv_ruby_parser_t *parser) {
 }
 
 /* Get headers */
-VALUE zsv_parser_headers(zsv_ruby_parser_t *parser) {
+VALUE zsv_parser_headers(zsv_ruby_parser_t *parser)
+{
     return parser->headers;
 }
 
 /* Check if closed */
-bool zsv_parser_closed(zsv_ruby_parser_t *parser) {
+bool zsv_parser_closed(zsv_ruby_parser_t *parser)
+{
     return parser->closed;
 }
 
 /* Get row count */
-size_t zsv_parser_row_count(zsv_ruby_parser_t *parser) {
+size_t zsv_parser_row_count(zsv_ruby_parser_t *parser)
+{
     return parser->row_count;
 }

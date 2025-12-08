@@ -9,7 +9,7 @@ typedef struct {
     char delimiter;
     char quote_char;
     bool headers;
-    VALUE header_array;  /* Custom headers as Ruby array */
+    VALUE header_array; /* Custom headers as Ruby array */
     int skip_lines;
     bool liberal_parsing;
     rb_encoding *encoding;

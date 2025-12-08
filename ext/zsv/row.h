@@ -6,11 +6,11 @@
 
 /* Row builder for efficient conversion from zsv cells to Ruby arrays/hashes */
 typedef struct {
-    VALUE *cells;           /* Array of Ruby string cells */
-    size_t count;           /* Number of cells in current row */
-    size_t capacity;        /* Allocated capacity */
-    VALUE headers;          /* Header array (for hash mode) */
-    rb_encoding *encoding;  /* String encoding */
+    VALUE *cells;          /* Array of Ruby string cells */
+    size_t count;          /* Number of cells in current row */
+    size_t capacity;       /* Allocated capacity */
+    VALUE headers;         /* Header array (for hash mode) */
+    rb_encoding *encoding; /* String encoding */
 } zsv_row_builder_t;
 
 /* Initialize row builder */
@@ -23,9 +23,7 @@ void zsv_row_builder_free(zsv_row_builder_t *builder);
 void zsv_row_builder_reset(zsv_row_builder_t *builder);
 
 /* Add cell to current row */
-void zsv_row_builder_add_cell(zsv_row_builder_t *builder,
-                               const unsigned char *data,
-                               size_t length);
+void zsv_row_builder_add_cell(zsv_row_builder_t *builder, const unsigned char *data, size_t length);
 
 /* Build Ruby array from current row */
 VALUE zsv_row_builder_to_array(zsv_row_builder_t *builder);

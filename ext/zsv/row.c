@@ -3,7 +3,8 @@
 
 #define INITIAL_ROW_CAPACITY 32
 
-zsv_row_builder_t *zsv_row_builder_new(rb_encoding *encoding) {
+zsv_row_builder_t *zsv_row_builder_new(rb_encoding *encoding)
+{
     zsv_row_builder_t *builder = ZSV_ALLOC(zsv_row_builder_t);
 
     builder->capacity = INITIAL_ROW_CAPACITY;
@@ -15,18 +16,21 @@ zsv_row_builder_t *zsv_row_builder_new(rb_encoding *encoding) {
     return builder;
 }
 
-void zsv_row_builder_free(zsv_row_builder_t *builder) {
+void zsv_row_builder_free(zsv_row_builder_t *builder)
+{
     if (builder) {
         xfree(builder->cells);
         xfree(builder);
     }
 }
 
-void zsv_row_builder_reset(zsv_row_builder_t *builder) {
+void zsv_row_builder_reset(zsv_row_builder_t *builder)
+{
     builder->count = 0;
 }
 
-static void zsv_row_builder_ensure_capacity(zsv_row_builder_t *builder, size_t needed) {
+static void zsv_row_builder_ensure_capacity(zsv_row_builder_t *builder, size_t needed)
+{
     if (needed <= builder->capacity) {
         return;
     }
@@ -41,9 +45,8 @@ static void zsv_row_builder_ensure_capacity(zsv_row_builder_t *builder, size_t n
     builder->capacity = new_capacity;
 }
 
-void zsv_row_builder_add_cell(zsv_row_builder_t *builder,
-                               const unsigned char *data,
-                               size_t length) {
+void zsv_row_builder_add_cell(zsv_row_builder_t *builder, const unsigned char *data, size_t length)
+{
     zsv_row_builder_ensure_capacity(builder, builder->count + 1);
 
     /* Create Ruby string with proper encoding */
@@ -55,12 +58,14 @@ void zsv_row_builder_add_cell(zsv_row_builder_t *builder,
     builder->cells[builder->count++] = str;
 }
 
-VALUE zsv_row_builder_to_array(zsv_row_builder_t *builder) {
+VALUE zsv_row_builder_to_array(zsv_row_builder_t *builder)
+{
     VALUE row = rb_ary_new_from_values(builder->count, builder->cells);
     return row;
 }
 
-VALUE zsv_row_builder_to_hash(zsv_row_builder_t *builder) {
+VALUE zsv_row_builder_to_hash(zsv_row_builder_t *builder)
+{
     if (NIL_P(builder->headers)) {
         rb_raise(rb_eRuntimeError, "Headers not set for hash conversion");
     }
@@ -85,7 +90,8 @@ VALUE zsv_row_builder_to_hash(zsv_row_builder_t *builder) {
     return hash;
 }
 
-void zsv_row_builder_set_headers(zsv_row_builder_t *builder, VALUE headers) {
+void zsv_row_builder_set_headers(zsv_row_builder_t *builder, VALUE headers)
+{
     Check_Type(headers, T_ARRAY);
     builder->headers = headers;
 }
