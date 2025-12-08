@@ -1,0 +1,43 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+  SuggestExtensions: false
+  Exclude:
+    - 'vendor/**/*'
+    - 'ext/zsv/vendor/**/*'
+    - 'tmp/**/*'
+    - 'pkg/**/*'
+    - 'ext/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
+Style/ClassAndModuleChildren:
+  EnforcedStyle: nested
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'benchmark/**/*'
+    - '**/*.gemspec'
+
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/AbcSize:
+  Max: 25
+
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+Gemspec/RequireMFA:
+  Enabled: false
