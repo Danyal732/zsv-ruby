@@ -11,6 +11,8 @@ zsv_row_builder_t *zsv_row_builder_new(rb_encoding *encoding)
     builder->cells = ZSV_ALLOC_N(VALUE, builder->capacity);
     builder->count = 0;
     builder->headers = Qnil;
+    builder->header_cache = NULL;
+    builder->header_count = 0;
     builder->encoding = encoding;
 
     return builder;
@@ -20,6 +22,9 @@ void zsv_row_builder_free(zsv_row_builder_t *builder)
 {
     if (builder) {
         xfree(builder->cells);
+        if (builder->header_cache) {
+            xfree(builder->header_cache);
+        }
         xfree(builder);
     }
 }
@@ -70,21 +75,26 @@ VALUE zsv_row_builder_to_hash(zsv_row_builder_t *builder)
         rb_raise(rb_eRuntimeError, "Headers not set for hash conversion");
     }
 
-    VALUE hash = rb_hash_new();
-    size_t header_count = RARRAY_LEN(builder->headers);
+    /* Use cached header count for efficiency */
+    size_t header_count = builder->header_count;
+    size_t cell_count = builder->count;
 
-    /* Match cells to headers */
-    for (size_t i = 0; i < builder->count && i < header_count; i++) {
-        VALUE key = rb_ary_entry(builder->headers, i);
-        VALUE value = builder->cells[i];
-        rb_hash_aset(hash, key, value);
+    /* Pre-allocate hash with expected size (Ruby 3.2+) */
+#ifdef HAVE_RB_HASH_NEW_CAPA
+    VALUE hash = rb_hash_new_capa(cell_count);
+#else
+    VALUE hash = rb_hash_new();
+#endif
+
+    /* Fast path: use cached header pointers (no rb_ary_entry calls) */
+    size_t matched = (cell_count < header_count) ? cell_count : header_count;
+    for (size_t i = 0; i < matched; i++) {
+        rb_hash_aset(hash, builder->header_cache[i], builder->cells[i]);
     }
 
-    /* If more cells than headers, add with numeric keys */
-    for (size_t i = header_count; i < builder->count; i++) {
-        VALUE key = SIZET2NUM(i);
-        VALUE value = builder->cells[i];
-        rb_hash_aset(hash, key, value);
+    /* Rare case: more cells than headers, add with numeric keys */
+    for (size_t i = header_count; i < cell_count; i++) {
+        rb_hash_aset(hash, SIZET2NUM(i), builder->cells[i]);
     }
 
     return hash;
@@ -94,4 +104,19 @@ void zsv_row_builder_set_headers(zsv_row_builder_t *builder, VALUE headers)
 {
     Check_Type(headers, T_ARRAY);
     builder->headers = headers;
+
+    /* Cache header count and pointers for fast access in to_hash */
+    builder->header_count = RARRAY_LEN(headers);
+
+    /* Free old cache if exists */
+    if (builder->header_cache) {
+        xfree(builder->header_cache);
+    }
+
+    /* Allocate and populate header cache */
+    builder->header_cache = ZSV_ALLOC_N(VALUE, builder->header_count);
+    const VALUE *header_ptr = RARRAY_CONST_PTR(headers);
+    for (size_t i = 0; i < builder->header_count; i++) {
+        builder->header_cache[i] = header_ptr[i];
+    }
 }

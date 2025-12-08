@@ -130,5 +130,8 @@ elsif RUBY_PLATFORM =~ /linux/
   $LIBS << " -lpthread -lm"
 end
 
+# Check for Ruby 3.2+ hash capacity preallocation
+have_func("rb_hash_new_capa")
+
 # Create Makefile
 create_makefile("zsv/zsv")

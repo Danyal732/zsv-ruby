@@ -10,6 +10,8 @@ typedef struct {
     size_t count;          /* Number of cells in current row */
     size_t capacity;       /* Allocated capacity */
     VALUE headers;         /* Header array (for hash mode) */
+    VALUE *header_cache;   /* Cached header VALUE pointers for fast access */
+    size_t header_count;   /* Number of headers (cached) */
     rb_encoding *encoding; /* String encoding */
 } zsv_row_builder_t;
 
