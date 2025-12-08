@@ -44,9 +44,9 @@ def count_string_allocations(file_path, parser)
   before_count = ObjectSpace.count_objects[:T_STRING]
 
   if parser == :csv
-    CSV.foreach(file_path) { |_| }
+    CSV.foreach(file_path) { |_| nil }
   else
-    ZSV.foreach(file_path) { |_| }
+    ZSV.foreach(file_path) { |_| nil }
   end
 
   after_count = ObjectSpace.count_objects[:T_STRING]
@@ -72,7 +72,7 @@ zsv_count, zsv_memory = measure_memory_holding_rows(test_file, :zsv)
 puts "ZSV:        #{zsv_count} rows, #{zsv_memory.round(1)} MB"
 
 if csv_memory.positive? && zsv_memory.positive?
-  savings = ((1 - zsv_memory / csv_memory) * 100).round(1)
+  savings = ((1 - (zsv_memory / csv_memory)) * 100).round(1)
   puts "\nMemory savings: #{savings}%"
 end
 
@@ -88,7 +88,7 @@ puts "CSV stdlib: #{csv_allocs} strings"
 puts "ZSV:        #{zsv_allocs} strings"
 
 if csv_allocs.positive? && zsv_allocs.positive?
-  reduction = ((1 - zsv_allocs.to_f / csv_allocs) * 100).round(1)
+  reduction = ((1 - (zsv_allocs.to_f / csv_allocs)) * 100).round(1)
   puts "\nAllocation reduction: #{reduction}%"
 end
 
