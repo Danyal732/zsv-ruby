@@ -45,3 +45,4 @@ Gemfile.lock
 
 # Benchmarks
 /benchmark/results/
+.rspec_status
