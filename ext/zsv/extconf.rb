@@ -100,11 +100,14 @@ platform_dir = if RUBY_PLATFORM =~ /darwin/
                  "generic"
                end
 
-# Find the built library
-zsv_lib_dir = File.join(ZSV_DIR, "build", platform_dir, "rel", "gcc", "lib")
-zsv_lib = File.join(zsv_lib_dir, "libzsv.a")
+# Find the built library - compiler name varies (gcc, gcc-14, clang, etc.)
+# Search for libzsv.a in the build directory
+build_rel_dir = File.join(ZSV_DIR, "build", platform_dir, "rel")
+zsv_lib = Dir.glob(File.join(build_rel_dir, "*", "lib", "libzsv.a")).first
 
-abort("libzsv.a not found at #{zsv_lib}") unless File.exist?(zsv_lib)
+abort("libzsv.a not found in #{build_rel_dir}/*/lib/") unless zsv_lib && File.exist?(zsv_lib)
+
+zsv_lib_dir = File.dirname(zsv_lib)
 
 # Add zsv include path
 include_dir = File.join(ZSV_DIR, "include")
