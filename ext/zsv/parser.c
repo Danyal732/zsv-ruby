@@ -135,6 +135,20 @@ zsv_ruby_parser_t *zsv_parser_new_from_string(VALUE string, VALUE opts_hash)
     const char *str_ptr = RSTRING_PTR(string);
     size_t str_len = RSTRING_LEN(string);
 
+    /* Handle empty string - fmemopen(ptr, 0, ...) fails on macOS */
+    if (str_len == 0) {
+        parser->file = NULL;
+        parser->closed = true;
+        parser->eof_reached = true;
+        zsv_options_parse(opts_hash, &parser->options);
+        parser->row_builder = zsv_row_builder_new(parser->options.encoding);
+        parser->row_buffer = rb_ary_new();
+        parser->headers = Qnil;
+        parser->current_row = Qnil;
+        parser->in_cleanup = false;
+        return parser;
+    }
+
     parser->file = fmemopen((void *)str_ptr, str_len, "rb");
     if (!parser->file) {
         xfree(parser);
